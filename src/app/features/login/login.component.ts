@@ -69,15 +69,6 @@ import { CommonModule } from '@angular/common';
               </div>
             </div>
 
-            <div class="form-actions">
-              <label class="remember-me">
-                <input type="checkbox" />
-                <span class="checkmark"></span>
-                Remember me
-              </label>
-              <a href="#" class="forgot-password">Forgot password?</a>
-            </div>
-
             <button type="submit" class="btn-submit" [disabled]="loading() || !kunnr || !password">
               <span *ngIf="!loading()">Sign In</span>
               <span *ngIf="loading()" class="spinner"></span>
@@ -326,43 +317,6 @@ import { CommonModule } from '@angular/common';
     .btn-toggle-password svg {
       width: 20px;
       height: 20px;
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: -4px;
-    }
-
-    .remember-me {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 14px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .remember-me input {
-      accent-color: #dc2626;
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      background: transparent;
-    }
-
-    .forgot-password {
-      color: #dc2626;
-      font-size: 14px;
-      text-decoration: none;
-      transition: opacity 0.3s;
-    }
-
-    .forgot-password:hover {
-      opacity: 0.8;
-      text-decoration: underline;
     }
 
     .btn-submit {
