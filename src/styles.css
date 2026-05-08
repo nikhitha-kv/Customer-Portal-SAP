@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* ─── Variables & Tokens ───────────────────────── */
+:root {
+  /* Colors */
+  --bg-base: #050505;
+  --bg-gradient-1: radial-gradient(at 0% 0%, rgba(220, 38, 38, 0.15) 0, transparent 50%);
+  --bg-gradient-2: radial-gradient(at 100% 0%, rgba(185, 28, 28, 0.15) 0, transparent 50%);
+  --bg-gradient-3: radial-gradient(at 50% 100%, rgba(153, 27, 27, 0.15) 0, transparent 50%);
+
+  --surface-glass: rgba(15, 10, 10, 0.6);
+  --surface-glass-hover: rgba(25, 10, 10, 0.8);
+  --surface-border: rgba(220, 38, 38, 0.2);
+
+  --text-primary: #ffffff;
+  --text-secondary: #e4e4e7;
+  --text-muted: #a1a1aa;
+
+  --accent-primary: #dc2626; /* Crimson Red */
+  --accent-glow: rgba(220, 38, 38, 0.4);
+  --accent-secondary: #991b1b; /* Dark Red */
+
+  /* Shadows */
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+}
+
+/* ─── Reset & Base ──────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  background-image: var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-gradient-3);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Typography ───────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, textarea, select {
+  font-family: inherit;
+}
+
+/* ─── Scrollbar ─────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.4);
+}
+
+/* ─── Glassmorphism Utilities ───────────────── */
+.glass-panel {
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-glass);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Animations ────────────────────────────── */
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stagger > * {
+  opacity: 0;
+  animation: slide-up-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-stagger > *:nth-child(1) { animation-delay: 50ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 100ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 150ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 200ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 250ms; }
+.animate-stagger > *:nth-child(6) { animation-delay: 300ms; }
+.animate-stagger > *:nth-child(7) { animation-delay: 350ms; }
+.animate-stagger > *:nth-child(8) { animation-delay: 400ms; }
+.animate-stagger > *:nth-child(9) { animation-delay: 450ms; }
+.animate-stagger > *:nth-child(10) { animation-delay: 500ms; }
+
