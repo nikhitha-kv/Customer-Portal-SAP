@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { SoapService } from './soap.service';
-import { SalesOrder } from '../models/order.model';
+import { SalesOrder, SalesOrderItem } from '../models/order.model';
 
 /** Helper: get first non-empty text content from a list of tag names */
 function tagVal(el: Element, ...tags: string[]): string {
@@ -40,11 +40,72 @@ export class DashboardService {
           }
         }
 
+        const parseRow = (el: Element) => {
+          const auart = tagVal(el, 'AUART', 'auart', 'Auart', 'AUART_ORIG', 'DOC_TYPE', 'BSART', 'DOCCAT');
+          const vbeln = tagVal(el, 'VBELN', 'vbeln', 'Vbeln', 'VBELN_VA', 'AUFNR', 'ORDER_NO', 'BELNR');
+          if (!vbeln && !auart) return null;
+
+          const erdat = tagVal(el, 'ERDAT', 'erdat', 'Erdat', 'AUDAT', 'ERZEIT', 'DATE', 'BEDAT', 'ANGDT');
+          const netwr = tagVal(el, 'NETWR', 'netwr', 'Netwr', 'NETTO', 'KZWI1', 'NET_VALUE', 'AMOUNT', 'BRUTTO', 'WRBTR');
+          const waerk = tagVal(el, 'WAERK', 'waerk', 'Waerk', 'CURRENCY', 'CURR', 'WAERS', 'PRSDT');
+
+          // Item level fields - case-insensitive
+          const matnr = tagVal(el, 'MATNR', 'matnr', 'Matnr', 'MATNR_VBAP', 'MAT_NR', 'MATERIAL', 'material');
+          const itemDesc = tagVal(el, 'ITEM_DESC', 'item_desc', 'itemDesc', 'ARKTX', 'arktx', 'Arktx', 'MAKTX', 'maktx');
+          const qty = tagVal(el, 'QTY', 'qty', 'Qty', 'KWMENG', 'kwmeng', 'QUANTITY', 'quantity', 'MENGE', 'menge');
+          const vrkme = tagVal(el, 'VRKME', 'vrkme', 'Vrkme', 'UNIT', 'unit', 'MEINS', 'meins', 'SALES_UNIT', 'sales_unit');
+
+          return {
+            vbeln,
+            erdat,
+            auart,
+            docType: this.resolveDocType(auart),
+            netwr,
+            waerk,
+            item: (matnr || itemDesc || qty || vrkme) ? { matnr, itemDesc, qty, vrkme } : null
+          };
+        };
+
+        const processRecords = (records: Array<any>) => {
+          const ordersMap = new Map<string, SalesOrder>();
+
+          for (const rec of records) {
+            if (!rec || !rec.vbeln) continue;
+
+            let order = ordersMap.get(rec.vbeln);
+            if (!order) {
+              order = {
+                vbeln: rec.vbeln,
+                erdat: rec.erdat,
+                auart: rec.auart,
+                docType: rec.docType,
+                netwr: rec.netwr,
+                waerk: rec.waerk,
+                items: []
+              };
+              ordersMap.set(rec.vbeln, order);
+            }
+
+            if (rec.item) {
+              const alreadyExists = order.items.some(
+                i => i.matnr === rec.item.matnr &&
+                     i.itemDesc === rec.item.itemDesc &&
+                     i.qty === rec.item.qty
+              );
+              if (!alreadyExists) {
+                order.items.push(rec.item);
+              }
+            }
+          }
+
+          return Array.from(ordersMap.values());
+        };
+
+        const parsedRows: any[] = [];
+
         if (!rows || rows.length === 0) {
-          // Last resort: find any elements with VBELN children
           const allVbeln = doc.getElementsByTagName('VBELN');
           console.warn('[DashboardService] No standard row tags found. VBELN count:', allVbeln.length);
-          // Try to use parent elements of VBELN as rows
           if (allVbeln.length > 0) {
             const parents = new Set<Element>();
             for (let i = 0; i < allVbeln.length; i++) {
@@ -52,38 +113,18 @@ export class DashboardService {
               if (parent) parents.add(parent);
             }
             parents.forEach(parent => {
-              const auart = tagVal(parent, 'AUART', 'AUART_ORIG', 'DOC_TYPE', 'BSART');
-              result.push({
-                vbeln: tagVal(parent, 'VBELN', 'VBELN_VA', 'AUFNR', 'ORDER_NO'),
-                erdat: tagVal(parent, 'ERDAT', 'AUDAT', 'ERZEIT', 'DATE', 'BEDAT'),
-                auart: auart,
-                docType: this.resolveDocType(auart),
-                netwr: tagVal(parent, 'NETWR', 'NETTO', 'KZWI1', 'NET_VALUE', 'AMOUNT', 'BRUTTO'),
-                waerk: tagVal(parent, 'WAERK', 'PRSDT', 'CURRENCY', 'CURR', 'WAERS'),
-              });
+              const parsed = parseRow(parent);
+              if (parsed) parsedRows.push(parsed);
             });
-            return result.filter(o => o.vbeln); // Remove empty rows
           }
-          return [];
+        } else {
+          for (let i = 0; i < rows.length; i++) {
+            const parsed = parseRow(rows[i]);
+            if (parsed) parsedRows.push(parsed);
+          }
         }
 
-        for (let i = 0; i < rows.length; i++) {
-          const el = rows[i];
-          const auart = tagVal(el, 'AUART', 'AUART_ORIG', 'DOC_TYPE', 'BSART', 'DOCCAT');
-          const vbeln = tagVal(el, 'VBELN', 'VBELN_VA', 'AUFNR', 'ORDER_NO', 'BELNR');
-          if (!vbeln && !auart) continue; // Skip truly empty items
-
-          result.push({
-            vbeln,
-            erdat: tagVal(el, 'ERDAT', 'AUDAT', 'ERZEIT', 'DATE', 'BEDAT', 'ANGDT'),
-            auart: auart,
-            docType: this.resolveDocType(auart),
-            netwr: tagVal(el, 'NETWR', 'NETTO', 'KZWI1', 'NET_VALUE', 'AMOUNT', 'BRUTTO', 'WRBTR'),
-            waerk: tagVal(el, 'WAERK', 'CURRENCY', 'CURR', 'WAERS', 'PRSDT'),
-          });
-        }
-
-        return result;
+        return processRecords(parsedRows);
       })
     );
   }
