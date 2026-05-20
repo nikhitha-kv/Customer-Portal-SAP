@@ -7,3 +7,5 @@ inquiry : http://AZKTLDS5CP.kcloud.com:8000/sap/bc/srt/scs/sap/zws_cp_inq_902095
 LOD: http://AZKTLDS5CP.kcloud.com:8000/sap/bc/srt/scs/sap/zws_cp_lod_902095?sap-client=100
 payment: http://AZKTLDS5CP.kcloud.com:8000/sap/bc/srt/scs/sap/zws_cp_pay_902095?sap-client=100
 fi ov: http://AZKTLDS5CP.kcloud.com:8000/sap/bc/srt/scs/sap/zws_cp_fi_ov_902095?sap-client=100
+
+ZCP_902095_PKG

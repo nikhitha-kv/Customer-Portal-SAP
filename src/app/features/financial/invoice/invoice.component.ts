@@ -37,7 +37,7 @@ import { FinancialItem } from '../../../core/models/invoice.model';
         </div>
         <div class="sd"></div>
         <div class="summ-item">
-          <span class="sl">Overdue (>30d)</span>
+          <span class="sl">Overdue</span>
           <span class="sv overdue">{{ overdueCount() }}</span>
         </div>
       </div>
@@ -87,7 +87,7 @@ import { FinancialItem } from '../../../core/models/invoice.model';
                 <td>{{ fmtDate(inv.billingDate) }}</td>
                 <td>{{ fmtDate(inv.dueDate) }}</td>
                 <td>
-                  <span class="aging-chip" [class]="agingCls(inv.aging)">{{ inv.aging || '—' }}</span>
+                  <span class="aging-chip" [class]="agingCls(inv.aging)">{{ formatAging(inv.aging) }}</span>
                 </td>
                 <td><strong>{{ fmtAmt(inv.amount) }}</strong></td>
                 <td><span class="curr">{{ inv.currency || '—' }}</span></td>
@@ -130,13 +130,15 @@ import { FinancialItem } from '../../../core/models/invoice.model';
     .tw{overflow-x:auto}.dt{width:100%;border-collapse:collapse}.dt th{padding:10px 18px;background:rgba(0,0,0,0.15);color:var(--text-secondary);font-size:11px;text-transform:uppercase;letter-spacing:0.05em;text-align:left;border-bottom:1px solid var(--surface-border);white-space:nowrap}.dt td{padding:11px 18px;font-size:13px;color:var(--text-primary);border-bottom:1px solid var(--surface-border);white-space:nowrap}.dt tr:last-child td{border-bottom:none}.dt tbody tr:hover{background:rgba(255,255,255,0.03)}
     .mono{font-family:monospace;font-weight:600;letter-spacing:0.04em}.curr{font-size:12px;font-weight:600;color:var(--text-secondary)}
     .aging-chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600}
-    .aging-chip.normal{background:rgba(6,182,212,0.15);color:#22d3ee;border:1px solid rgba(6,182,212,0.3)}
+    .aging-chip.normal{background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)}
+    .aging-chip.success{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)}
     .aging-chip.warning{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)}
     .aging-chip.danger{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
     .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600}
     .badge-c{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)}
     .badge-w{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)}
     .badge-r{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
+    .badge-b{background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)}
     .badge-d{background:rgba(255,255,255,0.07);color:var(--text-secondary);border:1px solid var(--surface-border)}
     .pdf-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--surface-border);border-radius:7px;color:var(--text-primary);font-size:12px;cursor:pointer;transition:all 0.2s}
     .pdf-btn svg{width:13px;height:13px}.pdf-btn:hover:not(:disabled){background:var(--accent-primary);border-color:var(--accent-primary);color:white}.pdf-btn:disabled{opacity:0.4;cursor:not-allowed}
@@ -197,7 +199,7 @@ export class InvoiceComponent implements OnInit {
   }
 
   overdueCount(): number {
-    return this.items().filter(i=>parseInt(i.aging||'0')>30).length;
+    return this.items().filter(i=>parseInt(i.aging||'0')>0).length;
   }
 
   fmtDate(d:string): string {
@@ -211,27 +213,35 @@ export class InvoiceComponent implements OnInit {
     return isNaN(n)?(v||'—'):new Intl.NumberFormat('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
   }
 
+  formatAging(a: string): string {
+    if (!a) return '—';
+    const d = parseInt(a);
+    if (isNaN(d)) return a;
+    return d < 0 ? '0' : a;
+  }
+
   agingCls(a:string): string {
     const d=parseInt(a||'0');
-    if(d>60) return 'aging-chip danger';
-    if(d>30) return 'aging-chip warning';
+    if(d>0) return 'aging-chip danger';
+    if(d===0) return 'aging-chip success';
+    if(d>=-7) return 'aging-chip warning';
     return 'aging-chip normal';
   }
 
   stLabel(a:string): string {
     const d=parseInt(a||'0');
-    if(d>60) return 'Overdue';
-    if(d>30) return 'Due Soon';
-    if(d>0) return 'Pending';
-    return 'Current';
+    if(d>0) return 'Overdue';
+    if(d===0) return 'Current';
+    if(d>=-7) return 'Due Soon';
+    return 'Pending';
   }
 
   stCls(a:string): string {
     const d=parseInt(a||'0');
-    if(d>60) return 'badge badge-r';
-    if(d>30) return 'badge badge-w';
-    if(d>0) return 'badge badge-d';
-    return 'badge badge-c';
+    if(d>0) return 'badge badge-r';
+    if(d===0) return 'badge badge-c';
+    if(d>=-7) return 'badge badge-w';
+    return 'badge badge-b';
   }
 
   downloadPdf(vbeln: string): void {
